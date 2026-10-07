@@ -1,31 +1,52 @@
-/* Kid board. Touch-first, huge type. Avoids newer CSS (no conic-gradient) for old tablet browsers. */
-.dashboard { min-height: 100vh; padding: 3vw; display: grid; grid-template-rows: auto auto 1fr auto; gap: 2.5vw; max-width: 1500px; margin: auto; }
-.topbar { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
-.eyebrow { margin: 0 0 8px; color: var(--accent); font-size: 1.1rem; font-weight: 800; letter-spacing: .12em; }
-.clock { margin: 0; font-family: Georgia, serif; font-size: 3.2rem; line-height: .9; }
-.date-label { margin: 0; color: var(--muted); font-size: 1.6rem; font-weight: 700; }
-.countdown-grid, .routine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2vw; }
-.card { border: 2px solid var(--line); border-radius: 24px; padding: 2.5vw; }
-.card.morning { border-color: var(--morning-line); }
-.card.bedtime { border-color: var(--bedtime-line); }
-.countdown-card { display: flex; align-items: center; gap: 2.5vw; min-height: 200px; }
-.countdown-card.morning { background: var(--morning); }
-.countdown-card.bedtime { background: var(--bedtime); }
-.countdown-card h1 { margin: 0 0 8px; font-size: 4rem; }
-.countdown-text { margin: 0; color: var(--accent); font-size: 3rem; font-weight: 800; }
-.ring { width: 160px; height: 160px; flex: 0 0 auto; transform: rotate(-90deg); }
-.ring circle { fill: none; stroke-width: 12; }
-.ring .track { stroke: rgba(255, 255, 255, .16); }
-.ring .fill { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
-.routine-card { background: var(--surface); }
-.routine-heading { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--line); padding-bottom: 14px; }
-.routine-heading h2 { margin: 0; font-size: 2.6rem; }
-.routine-heading span { color: var(--accent); font-size: 2rem; font-weight: 800; }
-.checklist { list-style: none; padding: 0; margin: 0; }
-.checklist li { display: flex; align-items: center; min-height: 84px; border-bottom: 1px solid var(--line); font-size: 2rem; font-weight: 800; cursor: pointer; }
+/* Kid board. Sized for a small landscape tablet (about 1024x600). Avoids newer CSS for old Fire browsers. */
+html, body { height: 100%; overflow: hidden; }
+.board { height: 100vh; display: flex; padding: 2vh 2vw; }
+.clock-side { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding-right: 2vw; }
+.clock { width: 92vh; height: 92vh; max-width: 48vw; max-height: 48vw; }
+.info-side { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+
+.top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2vh; }
+.weather { font-size: 5vh; font-weight: 800; white-space: nowrap; }
+.weather .phrase { color: var(--accent); margin-left: 1vw; }
+.date { color: var(--muted); font-size: 3.6vh; font-weight: 700; }
+
+.label { font-size: 7vh; line-height: 1.05; margin: 0 0 2vh; }
+.now-row { display: flex; align-items: flex-start; }
+.timer { position: relative; width: 34vh; height: 34vh; flex: 0 0 auto; margin-right: 3vw; }
+.ring { width: 100%; height: 100%; -webkit-transform: rotate(-90deg); transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 14; }
+.ring .track { stroke: rgba(255, 255, 255, .14); }
+.ring .fill { stroke-linecap: round; -webkit-transition: stroke-dashoffset 1s linear; transition: stroke-dashoffset 1s linear; }
+.timer-text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.timer-text span { font-size: 11vh; font-weight: 900; line-height: 1; }
+.timer-text small { font-size: 3.6vh; color: var(--muted); font-weight: 800; }
+
+.checklist { list-style: none; padding: 0; margin: 0; flex: 1 1 auto; }
+.checklist li { display: flex; align-items: center; min-height: 11vh; font-size: 5vh; font-weight: 800; cursor: pointer; border-bottom: 1px solid var(--line); }
 .checklist li:last-child { border-bottom: 0; }
-.box { width: 52px; height: 52px; margin-right: 20px; flex: 0 0 auto; border: 3px solid var(--accent); border-radius: 10px; color: var(--on-accent); font-size: 2.2rem; font-weight: 900; line-height: 46px; text-align: center; }
+.box { width: 7vh; height: 7vh; line-height: 6vh; margin-right: 1.5vw; flex: 0 0 auto; border: 4px solid var(--accent); border-radius: 1.2vh; text-align: center; color: var(--on-accent); font-size: 5vh; font-weight: 900; }
 .checklist li.done .box { background: var(--accent); }
-.checklist li.done .label { color: var(--muted); text-decoration: line-through; }
-.footer-hint { color: var(--muted); text-align: center; font-weight: 700; }
-@media (max-width: 760px) { .countdown-grid, .routine-grid { grid-template-columns: 1fr; } }
+.checklist li.done .text { color: var(--muted); text-decoration: line-through; }
+
+.day-panel h2 { font-size: 5vh; margin: 1vh 0; color: var(--accent); }
+.today { list-style: none; padding: 0; margin: 0; }
+.today li { font-size: 4.6vh; font-weight: 800; padding: 1.4vh 0; border-bottom: 1px solid var(--line); }
+.today li .when { color: var(--accent); margin-right: 1.5vw; }
+.today li.past { color: var(--muted); }
+.checklist.today-list li { cursor: default; min-height: 9vh; font-size: 4.4vh; }
+.checklist.today-list .when { color: var(--accent); margin-right: 1.5vw; }
+.checklist.today-list li.past { color: var(--muted); }
+.big-countdown { margin: auto 0 0; padding-top: 1.5vh; font-size: 4vh; font-weight: 800; color: var(--accent); }
+
+.clock .face { fill: var(--surface); stroke: var(--line); stroke-width: 2; }
+.clock .arc { fill: none; stroke-width: 16; opacity: .4; }
+.clock .arc.active { opacity: 1; }
+.clock .tick { stroke: var(--muted); stroke-width: 2; }
+.clock .tick.major { stroke: var(--text); stroke-width: 4; }
+.clock .num { fill: var(--text); font-size: 15px; font-weight: 800; text-anchor: middle; dominant-baseline: central; font-family: Arial, sans-serif; }
+.clock .hour { stroke: var(--text); stroke-width: 8; stroke-linecap: round; }
+.clock .minute { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
+.clock .pin { fill: var(--text); }
+
+.sleep { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; display: flex; align-items: center; justify-content: center; }
+.sleep span { color: #333; font-size: 12vh; font-weight: 800; }

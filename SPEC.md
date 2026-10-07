@@ -15,15 +15,15 @@ Self-hosted home dashboard. One Node/Express app on a Windows home server, read 
 
 ## Kid board (`/kid`)
 
-- Two short routines (morning, bedtime). 3 to 5 simple items each, defined in local config, not code.
-- Checkmarks saved on the server per day; reset overnight.
-- Visual countdown rings to the morning and bedtime targets (times in config). Purpose: teach a young kid that time drains as you do stuff.
-- Visual timer: big preset buttons (5/10/15/20 min) plus a shrinking ring. Beeps at the end via Web Audio (no audio files). The browser needs one tap before it will play sound; the timer start tap covers that.
-- Big-event countdown bar: any calendar event with `#countdown` in its description shows as "N days until X". For big things only.
-- Events: no dedicated kid calendar. Rule (to refine later): an event is shown if it falls on a home day, per the schedule pattern.
-- Schedule-aware: config holds which days are home days; on "away" days the board shows a quiet away state instead of routines.
-- Weather, stupid simple: one icon, current temp, one short phrase ("Maybe rain", "Snow", "Cold"). Mapped from Open-Meteo weather code and precip chance. No forecast, no details.
-- No random facts, messages, or other extras. Big type, dark, minimal text.
+- Schedule = chunks (config): start, end, label, color, 0 to 3 checklist items. Only the current chunk shows.
+- One countdown ring to the end of the current chunk; beeps at zero. Between chunks it counts down to the next timed calendar event today (ring full until the last hour).
+- Analog clock with colored arcs for the current half-day's chunks; hour hand sweeps over them.
+- Checkmarks saved on the server per chunk per day.
+- Sleep screen before `wake` and after the last chunk.
+- Calendar (one private iCal feed, `KID_ICS_URL`): all-day marker events decide home vs away days and no-school days (`calendarMarkers` in config). Other events today form the "Today" list. Events with `#countdown` in the description show "N days until X".
+- Away days: no routines, just clock, weather, and the day's events.
+- Weather: icon, temp, one short phrase.
+- No random facts, messages, or other extras.
 
 ## Personal homepage (`/home`)
 
@@ -76,13 +76,13 @@ Self-hosted home dashboard. One Node/Express app on a Windows home server, read 
 ## Stack rules
 
 - Node (CommonJS), Express, vanilla HTML/CSS/JS, CSS Grid, dark default. No build step.
-- Dependencies: `express` only, plus one small Markdown renderer (vendored `marked` single file) if writing our own isn't worth it.
+- Dependencies: `express`, `ical.js` (recurring calendar events). Possibly one small Markdown renderer for the wiki.
 - Remove `googleapis` and the OAuth stubs.
 
 ## Phases
 
-- **P0 Foundation:** git init, secrets layout, config loader, SQLite setup, shared theme, NSSM service, pre-commit check, README rewrite. Code done; first commit, GitHub push, and server install pending.
-- **P1 Kid board:** routines from config, server checkmarks, countdown rings, visual timer with beep, simple weather, ICS events filtered by home days, `#countdown` bar, away state.
+- **P0 Foundation:** git init, secrets layout, config loader, SQLite setup, shared theme, NSSM service, pre-commit check, README rewrite. Done: running on the server as a service.
+- **P1 Kid board:** chunk schedule, analog clock, single countdown with beep, simple weather, calendar feed with home/away/no-school markers, Today list, `#countdown`. Built; deploy pending.
 - **P2 Homepage:** Top 3 from Todoist, 7-day calendar.
 - **P3 Editable data:** roadmap and trip planning tables with browser edit forms; port the existing roadmap content.
 - **P4 Wiki:** render, edit, page list.
@@ -93,8 +93,8 @@ Self-hosted home dashboard. One Node/Express app on a Windows home server, read 
 
 1. ~~Top 3 source~~ Resolved: a saved Todoist filter. Server runs the filter query (`TODOIST_TOP3_QUERY` in `.env`) against Todoist's tasks-by-filter endpoint. The morning Claude run stays the only thing that sets the Top 3.
 2. ~~Server Node version~~ Resolved: Node 24, git installed.
-3. Which ICS calendars to pull from (kid board filters by home days; homepage shows all).
+3. ~~Kid calendar~~ Resolved: one dedicated kid calendar feed with all-day home/away/no-school marker events.
 
 ## Out of scope (decided)
 
-Voice announcements, Notion, random facts, dedicated kid calendar, tablet write access to calendar/tasks, Google OAuth.
+Voice announcements, Notion, random facts, tablet write access to calendar/tasks, Google OAuth.

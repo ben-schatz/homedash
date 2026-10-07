@@ -32,8 +32,8 @@ Requires Node 22.13+ and git.
 
 1. Clone and install:
    ```
-   git clone <repo-url> C:\HomeDash
-   cd C:\HomeDash
+   git clone <repo-url> D:\Projects\HomeDash
+   cd D:\Projects\HomeDash
    npm ci --omit=dev
    ```
 2. Copy `.env.example` to `.env` and `config.example.json` to `config.json`, then fill them in.
@@ -47,9 +47,9 @@ Requires Node 22.13+ and git.
    ```
    winget install NSSM.NSSM
    nssm install HomeDash "C:\Program Files\nodejs\node.exe" server.js
-   nssm set HomeDash AppDirectory C:\HomeDash
-   nssm set HomeDash AppStdout C:\HomeDash\data\service.log
-   nssm set HomeDash AppStderr C:\HomeDash\data\service.log
+   nssm set HomeDash AppDirectory D:\Projects\HomeDash
+   nssm set HomeDash AppStdout D:\Projects\HomeDash\data\service.log
+   nssm set HomeDash AppStderr D:\Projects\HomeDash\data\service.log
    nssm start HomeDash
    ```
 6. Reserve the server's IP in the router so the tablet URL never changes.

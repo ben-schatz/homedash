@@ -4,7 +4,9 @@
   "private": true,
   "description": "Self-hosted home dashboard: kid routine board for a wall tablet plus a personal homepage.",
   "main": "server.js",
-  "engines": { "node": ">=22.13" },
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
@@ -13,6 +15,7 @@
     "setup-hooks": "git config core.hooksPath .githooks"
   },
   "dependencies": {
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "ical.js": "^2.2.1"
   }
 }

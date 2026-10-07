@@ -1,20 +1,83 @@
 {
   "kidName": "Kiddo",
-  "routines": {
-    "morning": {
-      "label": "Morning",
-      "target": "09:00",
-      "items": ["Clothes", "Brush teeth", "Breakfast", "Shoes"]
+  "schoolDays": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "wake": "08:00",
+  "chunks": [
+    {
+      "id": "shoes",
+      "start": "08:00",
+      "end": "09:00",
+      "label": "Shoes on",
+      "color": "#4b91a7",
+      "schoolOnly": true,
+      "items": [
+        "Clothes",
+        "Teeth",
+        "Breakfast",
+        "Shoes"
+      ]
     },
-    "bedtime": {
-      "label": "Bedtime",
-      "target": "20:30",
-      "items": ["Pajamas", "Brush teeth", "Book", "Bed"]
+    {
+      "id": "almost",
+      "start": "18:00",
+      "end": "19:30",
+      "label": "Bedtime is almost here",
+      "color": "#ffd166",
+      "items": [
+        "Pick up toys"
+      ]
+    },
+    {
+      "id": "upstairs",
+      "start": "19:30",
+      "end": "20:00",
+      "label": "Upstairs",
+      "color": "#f4a261",
+      "items": []
+    },
+    {
+      "id": "lights",
+      "start": "20:00",
+      "end": "21:00",
+      "label": "Lights out",
+      "color": "#9b7fd4",
+      "items": [
+        "Pajamas",
+        "Teeth",
+        "Book"
+      ]
+    },
+    {
+      "id": "super",
+      "start": "21:00",
+      "end": "21:30",
+      "label": "SUPER GO TO BED TIME",
+      "color": "#e76f51",
+      "items": [
+        "Bed"
+      ]
     }
-  },
+  ],
   "weather": {
     "latitude": 40.0,
     "longitude": -90.0,
     "units": "fahrenheit"
+  },
+  "calendarMarkers": {
+    "home": [
+      "Home"
+    ],
+    "away": [
+      "Away"
+    ],
+    "noSchool": [
+      "No School"
+    ]
   }
 }

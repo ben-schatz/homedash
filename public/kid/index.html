@@ -9,18 +9,42 @@
   <link rel="stylesheet" href="/kid/kid.css">
 </head>
 <body>
-  <main class="dashboard">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow" id="title">TODAY</p>
-        <p id="clock" class="clock">--:--</p>
+  <main class="board" id="board">
+    <section class="clock-side">
+      <svg id="clock" class="clock" viewBox="0 0 200 200" aria-hidden="true"></svg>
+    </section>
+
+    <section class="info-side">
+      <header class="top">
+        <div id="weather" class="weather"></div>
+        <div id="date" class="date"></div>
+      </header>
+
+      <div id="now-panel" class="now-panel" hidden>
+        <h1 id="label" class="label"></h1>
+        <div class="now-row">
+          <div class="timer">
+            <svg id="ring" class="ring" viewBox="0 0 160 160" aria-hidden="true">
+              <circle class="track" cx="80" cy="80" r="66"></circle>
+              <circle id="ring-fill" class="fill" cx="80" cy="80" r="66"></circle>
+            </svg>
+            <div class="timer-text"><span id="left"></span><small id="left-unit"></small></div>
+          </div>
+          <ul id="checks" class="checklist"></ul>
+        </div>
       </div>
-      <p id="today-date" class="date-label"></p>
-    </header>
-    <section class="countdown-grid" id="countdowns"></section>
-    <section class="routine-grid" id="routines"></section>
-    <footer class="footer-hint">Tap a box when you finish</footer>
+
+      <div id="day-panel" class="day-panel" hidden>
+        <h2>Today</h2>
+        <ul id="today" class="today"></ul>
+      </div>
+
+      <p id="big-countdown" class="big-countdown" hidden></p>
+    </section>
   </main>
+
+  <div id="sleep" class="sleep" hidden><span id="sleep-time"></span></div>
+
   <script src="/kid/kid.js"></script>
 </body>
 </html>
