@@ -9,6 +9,18 @@
   var EVENT_WINDOW = 60; // minutes the ring spans when counting down to a calendar event
   var audio = null;
 
+  // Testing: /kid/?at=2026-10-13T16:20 runs the board as if it were that time.
+  var offset = 0;
+  var atMatch = /[?&]at=([^&]+)/.exec(location.search);
+  if (atMatch) {
+    var fake = new Date(decodeURIComponent(atMatch[1]));
+    if (!isNaN(fake.getTime())) offset = fake.getTime() - Date.now();
+  }
+  function now() { return new Date(Date.now() + offset); }
+  function isoLocal(d) {
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
   function $(id) { return document.getElementById(id); }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
@@ -46,7 +58,7 @@
   function currentState(date) {
     var m = nowMin(date);
     var chunks = todaysChunks(date);
-    var lastEnd = 0;
+    var lastEnd = cfg.chunks.length ? 0 : 24 * 60; // no chunks: never sleep
     for (var i = 0; i < cfg.chunks.length; i++) lastEnd = Math.max(lastEnd, toMin(cfg.chunks[i].end));
     if (m < toMin(cfg.wake) || m >= lastEnd) return { mode: 'sleep' };
     for (var j = 0; j < chunks.length; j++) {
@@ -70,37 +82,60 @@
     return 'M ' + s.x + ' ' + s.y + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + e.x + ' ' + e.y;
   }
 
+  function wedgePath(r, startMin, endMin) {
+    var s0 = polar(r, startMin % 720);
+    var e0 = polar(r, endMin % 720);
+    var large = (endMin - startMin) > 360 ? 1 : 0;
+    return 'M 100 100 L ' + s0.x + ' ' + s0.y + ' A ' + r + ' ' + r + ' 0 ' + large + ' 1 ' + e0.x + ' ' + e0.y + ' Z';
+  }
+
+  function hourArrow(minuteOfHalfDay) {
+    var tip = polar(52, minuteOfHalfDay);
+    var base = polar(-10, minuteOfHalfDay);
+    var a = (minuteOfHalfDay / 720) * 2 * Math.PI;
+    var nx = Math.cos(a), ny = Math.sin(a); // perpendicular to the hand
+    var neck = polar(36, minuteOfHalfDay);
+    var w = 4, head = 11;
+    var pts = [
+      [base.x + nx * w, base.y + ny * w],
+      [neck.x + nx * w, neck.y + ny * w],
+      [neck.x + nx * head, neck.y + ny * head],
+      [tip.x, tip.y],
+      [neck.x - nx * head, neck.y - ny * head],
+      [neck.x - nx * w, neck.y - ny * w],
+      [base.x - nx * w, base.y - ny * w]
+    ];
+    return pts.map(function (p) { return p[0].toFixed(2) + ',' + p[1].toFixed(2); }).join(' ');
+  }
+
   function drawClock(date, activeId) {
     var svg = $('clock');
     clear(svg);
     svg.appendChild(svgEl('circle', { 'class': 'face', cx: 100, cy: 100, r: 97 }));
 
-    // Arcs for chunks in the current half of the day (AM or PM).
+    // Pizza wedges for chunks in the current half of the day (AM or PM).
     var pm = date.getHours() >= 12;
     todaysChunks(date).forEach(function (c) {
       var s = toMin(c.start), e = toMin(c.end);
       if ((s >= 720) !== pm) return;
-      var path = svgEl('path', { 'class': 'arc' + (c.id === activeId ? ' active' : ''), d: arcPath(86, s, e), stroke: c.color });
-      svg.appendChild(path);
+      svg.appendChild(svgEl('path', { 'class': 'wedge' + (c.id === activeId ? ' active' : ''), d: wedgePath(95, s, e), fill: c.color }));
     });
 
-    for (var i = 0; i < 60; i++) {
-      var major = i % 5 === 0;
-      var p1 = polar(major ? 70 : 74, i * 12), p2 = polar(78, i * 12);
-      svg.appendChild(svgEl('line', { 'class': 'tick' + (major ? ' major' : ''), x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y }));
+    for (var i = 0; i < 12; i++) {
+      var p1 = polar(84, i * 60), p2 = polar(94, i * 60);
+      svg.appendChild(svgEl('line', { 'class': 'tick', x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y }));
     }
     for (var h = 1; h <= 12; h++) {
-      var p = polar(59, h * 60);
+      var p = polar(72, h * 60);
       var t = svgEl('text', { 'class': 'num', x: p.x, y: p.y });
       t.textContent = String(h);
       svg.appendChild(t);
     }
 
     var m = nowMin(date);
-    var hourEnd = polar(48, m % 720);
-    var minEnd = polar(72, (m % 60) * 12);
-    svg.appendChild(svgEl('line', { 'class': 'hour', x1: 100, y1: 100, x2: hourEnd.x, y2: hourEnd.y }));
+    var minEnd = polar(80, (m % 60) * 12);
     svg.appendChild(svgEl('line', { 'class': 'minute', x1: 100, y1: 100, x2: minEnd.x, y2: minEnd.y }));
+    svg.appendChild(svgEl('polygon', { 'class': 'hour', points: hourArrow(m % 720) }));
     svg.appendChild(svgEl('circle', { 'class': 'pin', cx: 100, cy: 100, r: 5 }));
   }
 
@@ -132,7 +167,8 @@
   }
 
   function loadToday() {
-    return getJSON('/api/kid/today').then(function (data) {
+    var url = '/api/kid/today' + (offset ? '?at=' + encodeURIComponent(isoLocal(now())) : '');
+    return getJSON(url).then(function (data) {
       today = data;
       sidePanelFor = null; // redraw the side panel with fresh events
     }, function () {});
@@ -152,7 +188,7 @@
   function loadChecks() {
     return getJSON('/api/kid/checks').then(function (data) {
       checks = data.checks;
-      var s = currentState(new Date());
+      var s = currentState(now());
       if (s.mode === 'chunk') renderChecks(s.chunk);
     });
   }
@@ -222,14 +258,14 @@
   var sidePanelFor = null;
 
   function tick() {
-    var now = new Date();
-    var state = currentState(now);
+    var date = now();
+    var state = currentState(date);
     var id = state.id || null;
 
     if (lastId && id !== lastId) beep();
     lastId = id;
 
-    var sideKey = (state.id || state.mode) + '|' + now.getHours() + ':' + Math.floor(now.getMinutes() / 5);
+    var sideKey = (state.id || state.mode) + '|' + date.getHours() + ':' + Math.floor(date.getMinutes() / 5);
     if (sideKey !== sidePanelFor) {
       sidePanelFor = sideKey;
       var list = $('checks');
@@ -240,28 +276,32 @@
       } else if (state.mode === 'event') {
         $('label').textContent = state.event.title;
         list.className = 'checklist today-list';
-        renderToday(list, now);
+        renderToday(list, date);
       } else if (state.mode === 'day') {
-        renderToday($('today'), now);
+        renderToday($('today'), date);
       }
     }
 
     $('sleep').hidden = state.mode !== 'sleep';
-    $('sleep-time').textContent = shortTime(now);
+    $('sleep-time').textContent = shortTime(date);
     $('now-panel').hidden = !(state.mode === 'chunk' || state.mode === 'event');
     $('day-panel').hidden = state.mode !== 'day';
-    $('date').textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+    $('date').textContent = date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
 
     var cd = today.countdowns && today.countdowns[0];
     $('big-countdown').hidden = !cd || state.mode === 'sleep';
     if (cd) $('big-countdown').textContent = cd.days === 0 ? cd.title + ' is today!' : cd.days + (cd.days === 1 ? ' day' : ' days') + ' until ' + cd.title;
 
-    if (state.mode === 'chunk' || state.mode === 'event') updateTimer(state, now);
-    if (state.mode !== 'sleep') drawClock(now, state.mode === 'chunk' ? state.chunk.id : null);
+    if (state.mode === 'chunk' || state.mode === 'event') updateTimer(state, date);
+    if (state.mode !== 'sleep') drawClock(date, state.mode === 'chunk' ? state.chunk.id : null);
   }
 
   getJSON('/api/kid/config').then(function (data) {
-    cfg = data;
+    cfg = data || {};
+    cfg.kidName = cfg.kidName || 'Kiddo';
+    cfg.schoolDays = cfg.schoolDays || [1, 2, 3, 4, 5];
+    cfg.wake = cfg.wake || '08:00';
+    cfg.chunks = cfg.chunks || [];
     document.title = cfg.kidName + "'s board";
     loadToday().then(function () {
       tick();

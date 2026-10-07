@@ -57,7 +57,10 @@ module.exports = function kidRoutes(config) {
   router.get('/today', async (request, response) => {
     try {
       const { events, stale, configured } = await calendar.events();
-      response.json(Object.assign({ configured, stale }, summarizeDay(events, markers, new Date())));
+      // ?at=2026-10-13T16:20 pretends it is that time (testing only; read-only).
+      const at = request.query.at ? new Date(String(request.query.at)) : null;
+      const now = at && !isNaN(at) ? at : new Date();
+      response.json(Object.assign({ configured, stale }, summarizeDay(events, markers, now)));
     } catch (error) {
       console.error('Calendar failed:', error.message);
       response.json({ configured: true, stale: true, home: null, noSchool: false, events: [], countdowns: [] });

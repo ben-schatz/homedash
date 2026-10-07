@@ -3,7 +3,39 @@
 // GET /api/weather/simple { icon, temp, phrase } for the kid board
 const express = require('express');
 
-// One short phrase a kid can read. Current conditions win; then today's rain chance; then temperature.
+// What to wear, from the midday (noon to 3 PM) feels-like temperature. Thresholds in Fahrenheit.
+const OUTFITS = [
+  [20, 'Super cold'],   // big coat, hat, mittens
+  [35, 'Winter coat'],
+  [50, 'Jacket'],
+  [62, 'Hoodie'],
+  [75, 'T-shirt'],
+  [Infinity, 'Shorts']
+];
+
+function middayFeelsLikeF(data, units) {
+  const hourly = data.hourly || {};
+  const times = hourly.time || [];
+  const temps = hourly.apparent_temperature || [];
+  const picked = [];
+  for (let i = 0; i < times.length; i++) {
+    const hour = Number(String(times[i]).slice(11, 13));
+    if (hour >= 12 && hour <= 15 && Number.isFinite(temps[i])) picked.push(temps[i]);
+  }
+  if (!picked.length) return null;
+  const avg = picked.reduce((a, b) => a + b, 0) / picked.length;
+  return units === 'celsius' ? avg * 9 / 5 + 32 : avg;
+}
+
+function outfitFor(data, units, rainChance) {
+  const f = middayFeelsLikeF(data, units);
+  if (f === null) return null;
+  let outfit = OUTFITS.find(([max]) => f <= max)[1];
+  if (rainChance >= 50 && f > 50) outfit = 'Rain jacket';
+  return outfit;
+}
+
+// Icon, temp now, and one short phrase: what to wear at midday (falls back to conditions).
 function simplify(data, units) {
   const code = data.current.weather_code;
   const temp = Math.round(data.current.temperature_2m);
@@ -34,7 +66,8 @@ function simplify(data, units) {
   else if (temp <= cold) phrase = 'Cold';
   else if (temp >= hot) phrase = 'Hot';
 
-  return { icon, temp, phrase };
+  const outfit = outfitFor(data, units, rainChance);
+  return { icon, temp, phrase: outfit || phrase, conditions: phrase };
 }
 
 module.exports = function weatherRoutes(config) {
@@ -53,6 +86,7 @@ module.exports = function weatherRoutes(config) {
       longitude: String(w.longitude),
       current: 'temperature_2m,weather_code,is_day',
       daily: 'temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,sunrise,sunset',
+      hourly: 'apparent_temperature',
       forecast_days: '1',
       temperature_unit: w.units === 'celsius' ? 'celsius' : 'fahrenheit',
       timezone: 'auto'
