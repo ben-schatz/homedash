@@ -10,7 +10,7 @@ const forbiddenFiles = [/^\.env$/, /^config\.json$/, /^data\//, /^\.blocklist$/]
 const secretPatterns = [
   { name: 'Google private iCal URL', re: /calendar\.google\.com\/calendar\/ical\/[^\s"']*\/private-/i },
   { name: 'private key', re: /-----BEGIN [A-Z ]*PRIVATE KEY-----/ },
-  { name: 'filled secret in env-style line', re: /^(?:TODOIST_TOKEN|SESSION_SECRET|PARENT_PASSWORD_HASH|AMP_PASSWORD)=\S+/m },
+  { name: 'filled secret in env-style line', re: /^(?:TODOIST_TOKEN|SESSION_SECRET|PARENT_PIN_HASH|AMP_PASSWORD)=\S+/m },
   { name: 'long hex token', re: /\b[a-f0-9]{40}\b/ }
 ];
 

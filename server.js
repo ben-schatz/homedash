@@ -5,7 +5,7 @@ loadEnv();
 
 const express = require('express');
 const { loadConfig } = require('./src/config');
-const { requireParent, mountAuth } = require('./src/auth');
+const { requireParent, mountAuth, pinEnabled } = require('./src/auth');
 
 const config = loadConfig();
 const app = express();
@@ -25,7 +25,7 @@ app.use('/kid', express.static(pub('kid')));
 app.use('/api/kid', require('./src/routes/kid')(config));
 app.use('/api/weather', require('./src/routes/weather')(config));
 
-// Parent routes (password gate)
+// Parent routes (optional PIN gate)
 mountAuth(app, views);
 app.use('/home', requireParent, express.static(pub('home')));
 app.get('/amp', requireParent, (request, response) => response.sendFile(views('amp.html')));
@@ -34,8 +34,6 @@ app.use('/api/amp', requireParent, require('./src/routes/amp')());
 app.get('/health', (request, response) => response.json({ ok: true }));
 app.use((request, response) => response.status(404).send('Not found'));
 
-if (!process.env.SESSION_SECRET || !process.env.PARENT_PASSWORD_HASH) {
-  console.warn('Parent login disabled: set SESSION_SECRET and PARENT_PASSWORD_HASH in .env.');
-}
+console.log(pinEnabled() ? 'Parent pages: PIN required.' : 'Parent pages: open (no PIN set).');
 
 app.listen(port, host, () => console.log(`HomeDash on http://${host}:${port}`));

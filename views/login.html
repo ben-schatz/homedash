@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HomeDash sign in</title>
+  <title>HomeDash PIN</title>
   <link rel="stylesheet" href="/shared/theme.css">
   <style>
     body { display: grid; place-items: center; min-height: 100vh; }
@@ -16,8 +16,8 @@
 <body>
   <form method="post" action="/login">
     <h2>HomeDash</h2>
-    <p class="error" id="error" hidden>Wrong password.</p>
-    <input type="password" name="password" placeholder="Password" autofocus required>
+    <p class="error" id="error" hidden>Wrong PIN.</p>
+    <input type="password" name="pin" inputmode="numeric" autocomplete="off" placeholder="PIN" autofocus required>
     <input type="hidden" name="next" id="next">
     <button type="submit">Sign in</button>
   </form>

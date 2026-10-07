@@ -3,8 +3,8 @@
 Self-hosted home dashboard for a Windows home server on a trusted LAN.
 
 - `/kid`: touch-first routine board for a wall tablet (open)
-- `/home`: personal homepage for the household computers (password)
-- `/amp`: game server status (password, optional)
+- `/home`: personal homepage for the household computers (optional PIN)
+- `/amp`: game server status (optional PIN, v2)
 
 Node.js + Express, vanilla HTML/CSS/JS, SQLite via built-in `node:sqlite`. No build step. See `SPEC.md` for scope and phases.
 
@@ -37,8 +37,7 @@ Requires Node 22.13+ and git.
    npm ci --omit=dev
    ```
 2. Copy `.env.example` to `.env` and `config.example.json` to `config.json`, then fill them in.
-   - `npm run hash-password` prints the `PARENT_PASSWORD_HASH` line.
-   - `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` prints a `SESSION_SECRET`.
+   - Optional: `npm run hash-pin` prints a `PARENT_PIN_HASH` line. Blank means no PIN.
 3. Test: `npm start`, then open `http://localhost:3000` on the server.
 4. Allow LAN access (admin PowerShell, Private network profile only):
    ```
@@ -65,4 +64,4 @@ Fully Kiosk Browser pointed at `http://SERVER_IP:3000/kid`. Keep screen on while
 
 ## Security notes
 
-LAN only, plain HTTP. Parent pages use a password with a signed 30-day cookie. Do not expose the port to the internet.
+LAN only, plain HTTP. Parent pages are open unless a PIN is set; a correct PIN sets a signed 10-year cookie. Do not expose the port to the internet.

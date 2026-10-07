@@ -58,7 +58,7 @@ Self-hosted home dashboard. One Node/Express app on a Windows home server, read 
 
 - LAN only. Bind to the LAN interface; Windows firewall allows the port on the Private profile only.
 - `/kid` open (read-mostly, tablet in kiosk).
-- `/home`, `/wiki` edit, `/amp`: password gate (session cookie, password hash in `.env`). Anyone on the Wi-Fi could otherwise read the calendar and tasks.
+- `/home`, `/wiki`, `/amp`: open by default. Optional PIN (`PARENT_PIN_HASH`); a correct PIN sets a 10-year cookie so devices never re-login. Tradeoff accepted: anyone on the Wi-Fi can read calendar and tasks.
 - No HTTPS on LAN for now. Revisit if anything is ever exposed.
 
 ## Machines and deploy
@@ -83,7 +83,7 @@ Self-hosted home dashboard. One Node/Express app on a Windows home server, read 
 
 - **P0 Foundation:** git init, secrets layout, config loader, SQLite setup, shared theme, NSSM service, pre-commit check, README rewrite. Code done; first commit, GitHub push, and server install pending.
 - **P1 Kid board:** routines from config, server checkmarks, countdown rings, visual timer with beep, simple weather, ICS events filtered by home days, `#countdown` bar, away state.
-- **P2 Homepage:** Top 3 from Todoist, 7-day calendar, password gate.
+- **P2 Homepage:** Top 3 from Todoist, 7-day calendar.
 - **P3 Editable data:** roadmap and trip planning tables with browser edit forms; port the existing roadmap content.
 - **P4 Wiki:** render, edit, page list.
 - **P5 (v2) AMP:** test against real AMP, port parsing from the separate AMP launcher project, host stats.

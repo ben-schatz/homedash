@@ -1,9 +1,25 @@
-// Parent password gate. Password hash (scrypt) and session secret come from .env.
-// Session is a signed, expiring cookie, so restarts do not log anyone out.
+// Optional parent PIN gate. If PARENT_PIN_HASH is blank, parent pages are open (trusted LAN).
+// If set, a correct PIN gives a signed cookie that lasts 10 years, so devices never re-login.
+// The signing secret is SESSION_SECRET if set, otherwise generated once into data/.session_secret.
+const fs = require('node:fs');
+const path = require('node:path');
 const crypto = require('node:crypto');
+const { dataDir } = require('./db');
 
 const COOKIE = 'hd_session';
-const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+const MAX_AGE_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+
+function secret() {
+  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+  const file = path.join(dataDir, '.session_secret');
+  if (!fs.existsSync(file)) fs.writeFileSync(file, crypto.randomBytes(32).toString('hex'));
+  process.env.SESSION_SECRET = fs.readFileSync(file, 'utf8').trim();
+  return process.env.SESSION_SECRET;
+}
+
+function pinEnabled() {
+  return Boolean(process.env.PARENT_PIN_HASH);
+}
 
 function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
@@ -19,7 +35,7 @@ function verifyPassword(password, stored) {
 }
 
 function sign(value) {
-  return crypto.createHmac('sha256', process.env.SESSION_SECRET).update(value).digest('hex');
+  return crypto.createHmac('sha256', secret()).update(value).digest('hex');
 }
 
 function readCookie(request, name) {
@@ -32,7 +48,7 @@ function readCookie(request, name) {
 }
 
 function isParent(request) {
-  if (!process.env.SESSION_SECRET) return false;
+  if (!pinEnabled()) return true;
   const value = readCookie(request, COOKIE);
   if (!value) return false;
   const [expires, signature] = value.split('.');
@@ -56,7 +72,7 @@ function mountAuth(app, views) {
   app.get('/login', (request, response) => response.sendFile(views('login.html')));
 
   app.post('/login', async (request, response) => {
-    const ok = process.env.SESSION_SECRET && verifyPassword(String(request.body.password || ''), process.env.PARENT_PASSWORD_HASH);
+    const ok = pinEnabled() && verifyPassword(String(request.body.pin || ''), process.env.PARENT_PIN_HASH);
     if (!ok) {
       await new Promise(resolve => setTimeout(resolve, 1000)); // slow down guessing
       return response.redirect(`/login?error=1&next=${encodeURIComponent(safeNext(request.body.next))}`);
@@ -72,4 +88,4 @@ function mountAuth(app, views) {
   });
 }
 
-module.exports = { hashPassword, verifyPassword, requireParent, mountAuth };
+module.exports = { hashPassword, verifyPassword, requireParent, mountAuth, pinEnabled };

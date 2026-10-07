@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "hash-password": "node scripts/hash-password.js",
+    "hash-pin": "node scripts/hash-pin.js",
     "check": "node scripts/check-secrets.js --all",
     "setup-hooks": "git config core.hooksPath .githooks"
   },
