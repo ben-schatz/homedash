@@ -1,0 +1,20 @@
+{
+  "kidName": "Kiddo",
+  "routines": {
+    "morning": {
+      "label": "Morning",
+      "target": "09:00",
+      "items": ["Clothes", "Brush teeth", "Breakfast", "Shoes"]
+    },
+    "bedtime": {
+      "label": "Bedtime",
+      "target": "20:30",
+      "items": ["Pajamas", "Brush teeth", "Book", "Bed"]
+    }
+  },
+  "weather": {
+    "latitude": 40.0,
+    "longitude": -90.0,
+    "units": "fahrenheit"
+  }
+}

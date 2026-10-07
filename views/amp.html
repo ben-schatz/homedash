@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Servers | HomeDash</title>
+  <style>
+    :root { font-family: 'Trebuchet MS', sans-serif; color: #edf4f5; background: #111a23; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px clamp(20px, 4vw, 56px); }
+    header { display: flex; align-items: end; justify-content: space-between; gap: 20px; border-bottom: 1px solid #435766; padding-bottom: 22px; }
+    h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.4rem); }
+    h2 { margin: 0; font-size: 1.5rem; }
+    p { margin: 8px 0; }
+    a { color: #7fd7c4; }
+    button { background: #68cab5; color: #102126; border: 0; border-radius: 6px; padding: 12px 20px; font: inherit; font-weight: 700; cursor: pointer; }
+    button:focus-visible, a:focus-visible { outline: 3px solid #ffd166; outline-offset: 3px; }
+    .eyebrow { color: #ffcc74; font-size: .8rem; font-weight: 800; text-transform: uppercase; }
+    .summary { display: flex; gap: 36px; margin: 26px 0; flex-wrap: wrap; }
+    .summary strong { display: block; font-size: 2.5rem; }
+    .muted { color: #a7b9c3; }
+    .list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr)); gap: 16px; }
+    .server { border: 1px solid #435766; border-left: 5px solid #889aa7; background: #1b2a35; border-radius: 6px; padding: 22px; }
+    .server.online { border-left-color: #6ce2ac; }
+    .server.offline { border-left-color: #f08e82; }
+    .server-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+    .status { color: #e3b879; font-weight: 800; }
+    .online .status { color: #6ce2ac; }
+    .offline .status { color: #f08e82; }
+    .metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 22px 0; }
+    .metrics span { display: block; color: #a7b9c3; }
+    .metrics strong { font-size: 1.35rem; }
+    .history { display: flex; gap: 3px; height: 22px; align-items: stretch; }
+    .history i { flex: 1; background: #607481; border-radius: 2px; }
+    .history i.up { background: #6ce2ac; }
+    .history i.down { background: #f08e82; }
+    #message { min-height: 1.5em; }
+    @media (max-width: 600px) { header { align-items: start; flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div><p class="eyebrow">HomeDash / Parent</p><h1>Game servers</h1><p class="muted">AMP on this computer</p></div>
+    <button id="refresh" type="button">Refresh</button>
+  </header>
+  <div class="summary"><div><strong id="online">--</strong><span>Running</span></div><div><strong id="total">--</strong><span>Instances</span></div><div><strong id="checked">--</strong><span>Last check</span></div></div>
+  <p id="message" class="muted" role="status">Connecting to AMP...</p>
+  <main id="servers" class="list" aria-label="AMP instances"></main>
+  <script>
+    const servers = document.querySelector('#servers');
+    const message = document.querySelector('#message');
+    function metric(label, value) {
+      const cell = document.createElement('div');
+      const title = document.createElement('span');
+      title.textContent = label;
+      const number = document.createElement('strong');
+      number.textContent = value == null ? '—' : String(value);
+      cell.append(title, number);
+      return cell;
+    }
+    function render(data) {
+      servers.replaceChildren();
+      document.querySelector('#online').textContent = data.instances.filter(item => item.running === true).length;
+      document.querySelector('#total').textContent = data.instances.length;
+      document.querySelector('#checked').textContent = new Date(data.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      message.textContent = data.instances.length ? data.historyNote : 'AMP connected, but no instances were returned. Check ADS permissions and the AMP API response.';
+      for (const instance of data.instances) {
+        const card = document.createElement('article');
+        card.className = `server ${instance.running === true ? 'online' : instance.running === false ? 'offline' : ''}`;
+        const head = document.createElement('div');
+        head.className = 'server-head';
+        const title = document.createElement('h2');
+        title.textContent = instance.name;
+        const status = document.createElement('span');
+        status.className = 'status';
+        status.textContent = instance.running === null ? 'Unknown' : instance.running ? 'Running' : 'Stopped';
+        head.append(title, status);
+        const metrics = document.createElement('div');
+        metrics.className = 'metrics';
+        const knownPlayers = instance.history.map(sample => sample.players).filter(value => value != null);
+        const runningSamples = instance.history.filter(sample => sample.running === true).length;
+        metrics.append(metric('Players now', instance.players), metric('Peak observed', knownPlayers.length ? Math.max(...knownPlayers) : null), metric('CPU', instance.cpu == null ? null : `${instance.cpu}%`), metric('Memory', instance.memory == null ? null : `${instance.memory}%`), metric('AMP uptime', instance.uptime == null ? null : `${Math.floor(instance.uptime / 3600)}h ${Math.floor(instance.uptime % 3600 / 60)}m`), metric('Running checks', `${runningSamples} / ${instance.history.length}`));
+        const label = document.createElement('p');
+        label.className = 'muted';
+        label.textContent = 'Recent checks';
+        const history = document.createElement('div');
+        history.className = 'history';
+        history.setAttribute('aria-label', `${instance.history.length} checks since dashboard start`);
+        for (const sample of instance.history) {
+          const bar = document.createElement('i');
+          bar.className = sample.running === true ? 'up' : sample.running === false ? 'down' : '';
+          bar.title = `${new Date(sample.time).toLocaleTimeString()}: ${sample.running === true ? 'Running' : sample.running === false ? 'Stopped' : 'Unknown'}${sample.players == null ? '' : `, ${sample.players} players`}`;
+          history.append(bar);
+        }
+        card.append(head, metrics, label, history);
+        servers.append(card);
+      }
+    }
+    async function load() {
+      try {
+        const response = await fetch('/api/amp', { cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `AMP returned ${response.status}`);
+        render(data);
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    }
+    document.querySelector('#refresh').addEventListener('click', load);
+    load();
+    setInterval(load, 30000);
+  </script>
+</body>
+</html>

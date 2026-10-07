@@ -1,0 +1,18 @@
+{
+  "name": "homedash",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Self-hosted home dashboard: kid routine board for a wall tablet plus a personal homepage.",
+  "main": "server.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "hash-password": "node scripts/hash-password.js",
+    "check": "node scripts/check-secrets.js --all",
+    "setup-hooks": "git config core.hooksPath .githooks"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

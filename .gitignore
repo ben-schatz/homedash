@@ -1,0 +1,11 @@
+# dependencies
+node_modules/
+
+# secrets and personal data (never commit)
+.env
+config.json
+data/
+.blocklist
+
+# logs
+*.log

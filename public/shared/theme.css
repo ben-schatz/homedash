@@ -1,0 +1,25 @@
+/* Shared dark theme. Page styles build on these tokens. */
+:root {
+  color-scheme: dark;
+  --background: #101827;
+  --surface: #1a2940;
+  --surface-strong: #203452;
+  --line: #405a7a;
+  --text: #f4f7fb;
+  --muted: #9baac0;
+  --accent: #ffd166;
+  --on-accent: #162032;
+  --success: #8bd3a8;
+  --danger: #ff8a80;
+  --morning: #254d63;
+  --morning-line: #4b91a7;
+  --bedtime: #3d315d;
+  --bedtime-line: #7766a1;
+  --radius: 18px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--background); }
+body { color: var(--text); font-family: 'Trebuchet MS', Arial, sans-serif; }
+h1, h2, h3 { font-family: Georgia, serif; margin-top: 0; }
+a { color: var(--accent); }
+[hidden] { display: none !important; }

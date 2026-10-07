@@ -1,0 +1,25 @@
+// Minimal .env loader. Lines are KEY=VALUE; lines starting with # are comments.
+// Existing process.env values win, so a service manager can override the file.
+const fs = require('node:fs');
+const path = require('node:path');
+
+function loadEnv(file = path.join(__dirname, '..', '.env')) {
+  if (!fs.existsSync(file)) {
+    console.warn('No .env file found. Copy .env.example to .env.');
+    return;
+  }
+  for (const rawLine of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eq = line.indexOf('=');
+    if (eq < 1) continue;
+    const key = line.slice(0, eq).trim();
+    let value = line.slice(eq + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    if (process.env[key] === undefined) process.env[key] = value;
+  }
+}
+
+module.exports = { loadEnv };

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home</title>
+  <link rel="stylesheet" href="/shared/theme.css">
+  <style>
+    main { max-width: 1100px; margin: auto; padding: 32px 20px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; min-height: 160px; }
+    .muted { color: var(--muted); }
+    button { font: inherit; background: none; border: 0; color: var(--muted); cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Home</h1>
+      <form method="post" action="/logout"><button type="submit">Sign out</button></form>
+    </header>
+    <div class="grid">
+      <section class="panel"><h3>Top 3</h3><p class="muted">P2</p></section>
+      <section class="panel"><h3>Next 7 days</h3><p class="muted">P2</p></section>
+      <section class="panel"><h3>Roadmap</h3><p class="muted">P3</p></section>
+      <section class="panel"><h3>Trips</h3><p class="muted">P3</p></section>
+      <section class="panel"><h3>Wiki</h3><p class="muted">P4</p></section>
+      <section class="panel"><h3>Servers</h3><p><a href="/amp">AMP</a> <span class="muted">(v2)</span></p></section>
+    </div>
+  </main>
+</body>
+</html>
